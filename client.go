@@ -40,6 +40,7 @@ func CreateClient() *http.Client {
 
 	return config.Client(oauth1.NoContext, token)
 }
+
 func registerWebhook() {
 	fmt.Println("Registering webhook...")
 	httpClient := CreateClient()

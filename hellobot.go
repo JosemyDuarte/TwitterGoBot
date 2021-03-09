@@ -36,7 +36,7 @@ func main() {
 	//Listen to crc check and handle
 	m.HandleFunc("/webhook/twitter", CrcCheck).Methods("GET")
 	//Listen to webhook event and handle
-	m.HandleFunc("/twitter/webhook", WebhookHandler).Methods("POST")
+	m.HandleFunc("/webhook/twitter", WebhookHandler).Methods("POST")
 
 	//Start Server
 	server := &http.Server{
