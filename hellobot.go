@@ -19,7 +19,7 @@ func main() {
 	//Load env
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		log.Println("WARNING: No .env file found...")
 	}
 
 	fmt.Println("Starting Server")
