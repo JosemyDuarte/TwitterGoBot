@@ -54,12 +54,16 @@ func registerWebhook() {
 	defer resp.Body.Close()
 	//Parse response and check response
 	body, _ := ioutil.ReadAll(resp.Body)
-	var data map[string]interface{}
+	type webhookResponse struct {
+		id string
+	}
+	data := webhookResponse{}
 	if err := json.Unmarshal(body, &data); err != nil {
+		fmt.Println(err)
 		panic(err)
 	}
 	fmt.Println(data)
-	fmt.Println("Webhook id of " + data["id"].(string) + " has been registered")
+	fmt.Println("Webhook id of " + data.id + " has been registered")
 	subscribeWebhook()
 }
 
