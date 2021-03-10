@@ -22,7 +22,7 @@ func main() {
 		log.Println("WARNING: No .env file found...")
 	}
 
-	fmt.Println("Starting Server")
+	log.Println("starting Server")
 
 	go registerWebhook()
 
@@ -31,7 +31,10 @@ func main() {
 	//Listen to the base url and send a response
 	m.HandleFunc("/", func(writer http.ResponseWriter, _ *http.Request) {
 		writer.WriteHeader(200)
-		fmt.Fprintf(writer, "Server is up and running")
+		if _, err := fmt.Fprintf(writer, "Server is up and running"); err != nil {
+			log.Printf("couldn't write response to / request: %v \n", err)
+			return
+		}
 	})
 	//Listen to crc check and handle
 	m.HandleFunc("/webhook/twitter", CrcCheck).Methods("GET")
@@ -53,21 +56,23 @@ func main() {
 func determineListenAddress() string {
 	port := os.Getenv("PORT")
 	if port == "" {
-		fmt.Println("$PORT not set, using :80 as default")
+		log.Println("$PORT not set, using :80 as default")
 		return ":80"
 	}
 	return ":" + port
 }
 
 func WebhookHandler(_ http.ResponseWriter, request *http.Request) {
-	fmt.Println("Handler called")
+	log.Println("webhook Handler called")
 	//Read the body of the tweet
 	body, _ := ioutil.ReadAll(request.Body)
-	//Initialize a webhok load obhject for json decoding
+	log.Printf("request: %s \n", string(body))
+	//Initialize a webhook load object for json decoding
 	var load WebhookLoad
 	err := json.Unmarshal(body, &load)
 	if err != nil {
-		fmt.Println("An error occured: " + err.Error())
+		log.Printf("can't unmarshal webhook request body: %v", err)
+		return
 	}
 	//Check if it was a tweet_create_event and tweet was in the payload and it was not tweeted by the bot
 	if len(load.TweetCreateEvent) < 1 || load.UserId == load.TweetCreateEvent[0].User.IdStr {
@@ -77,10 +82,8 @@ func WebhookHandler(_ http.ResponseWriter, request *http.Request) {
 	//of accounts they are replying to
 	_, err = SendTweet("@"+load.TweetCreateEvent[0].User.Handle+" Hello World", load.TweetCreateEvent[0].IdStr)
 	if err != nil {
-		fmt.Println("An error occurred:")
-		fmt.Println(err.Error())
-	} else {
-		fmt.Println("Tweet sent successfully")
+		log.Printf("can't send tweet: %v", err)
+		return
 	}
 }
 
@@ -90,7 +93,10 @@ func CrcCheck(writer http.ResponseWriter, request *http.Request) {
 	//Get crc token in parameter
 	token := request.URL.Query()["crc_token"]
 	if len(token) < 1 {
-		fmt.Fprintf(writer, "No crc_token given")
+		if _, err := fmt.Fprintf(writer, "No crc_token given"); err != nil {
+			log.Printf("[No crc_token given] couldn't write response to CrcCheck request: %v \n", err)
+			return
+		}
 		return
 	}
 
@@ -103,5 +109,8 @@ func CrcCheck(writer http.ResponseWriter, request *http.Request) {
 	response["response_token"] = "sha256=" + encoded
 	//Turn response map to json and send it to the writer
 	responseJson, _ := json.Marshal(response)
-	fmt.Fprintf(writer, string(responseJson))
+	if _, err := fmt.Fprintf(writer, string(responseJson)); err != nil {
+		log.Printf("couldn't write token response to CrcCheck request: %v \n", err)
+		return
+	}
 }

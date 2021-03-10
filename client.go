@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -42,7 +43,7 @@ func CreateClient() *http.Client {
 }
 
 func registerWebhook() {
-	fmt.Println("Registering webhook...")
+	log.Println("registering webhook...")
 	httpClient := CreateClient()
 
 	//Set parameters
@@ -51,60 +52,60 @@ func registerWebhook() {
 	values.Set("url", os.Getenv("APP_URL")+"/webhook/twitter")
 
 	//Make Oauth Post with parameters
-	resp, _ := httpClient.PostForm(path, values)
-	defer resp.Body.Close()
-	//Parse response and check response
-	body, _ := ioutil.ReadAll(resp.Body)
-	type webhookResponse struct {
-		id string
-	}
-	data := webhookResponse{}
-	if err := json.Unmarshal(body, &data); err != nil {
-		fmt.Println(err)
-		panic(err)
-	}
-	fmt.Println(data)
-	fmt.Println("Webhook id of " + data.id + " has been registered")
+	_, _ = httpClient.PostForm(path, values)
+	log.Println("webhook has been registered")
 	subscribeWebhook()
 }
 
 func subscribeWebhook() {
-	fmt.Println("Subscribing webapp...")
+	log.Println("subscribing webapp...")
 	client := CreateClient()
 	path := "https://api.twitter.com/1.1/account_activity/all/" + os.Getenv("WEBHOOK_ENV") + "/subscriptions.json"
 	resp, _ := client.PostForm(path, nil)
 	body, _ := ioutil.ReadAll(resp.Body)
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			log.Println("something went wrong closing body response")
+			return
+		}
+	}()
+
 	//If response code is 204 it was successful
 	if resp.StatusCode == 204 {
-		fmt.Println("Subscribed successfully")
-	} else if resp.StatusCode != 204 {
-		fmt.Println("Could not subscribe the webhook. Response below:")
-		fmt.Println(string(body))
+		log.Println("subscribed successfully")
 	}
+
+	log.Println("could not subscribe the webhook. Response below:")
+	log.Println(string(body))
 }
 
-func SendTweet(tweet string, reply_id string) (*Tweet, error) {
-	fmt.Println("Sending tweet as reply to " + reply_id)
-	//Initialize tweet object to store response in
-	var responseTweet Tweet
+func SendTweet(tweet string, replyId string) (*Tweet, error) {
+	log.Println("sending tweet as reply to " + replyId)
 	//Add params
 	params := url.Values{}
 	params.Set("status", tweet)
-	params.Set("in_reply_to_status_id", reply_id)
+	params.Set("in_reply_to_status_id", replyId)
 	//Grab client and post
 	client := CreateClient()
 	resp, err := client.PostForm("https://api.twitter.com/1.1/statuses/update.json", params)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			fmt.Println("something went wrong closing body response")
+			return
+		}
+	}()
 	//Decode response and send out
 	body, _ := ioutil.ReadAll(resp.Body)
-	fmt.Println(string(body))
+	log.Printf("twitter response of tweet sent: %s \n", string(body))
+	//Initialize tweet object to store response in
+	var responseTweet Tweet
 	err = json.Unmarshal(body, &responseTweet)
 	if err != nil {
 		return nil, err
 	}
+	log.Println("tweet sent successfully")
 	return &responseTweet, nil
 }
