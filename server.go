@@ -12,17 +12,11 @@ import (
 	"os"
 
 	"github.com/gorilla/mux"
-	"github.com/joho/godotenv"
 )
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Println("WARNING: No .env file found...")
-	}
-
-	log.Println("starting server")
-
+	log.Println("starting server...")
+	defer log.Println("shutting down server...")
 	go registerWebhook()
 
 	m := mux.NewRouter()

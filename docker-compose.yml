@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+  twitter:
+    build: .
+    ports:
+      - 8888:8888
+    environment:
+      - CONSUMER_KEY=[REPLACE_ME]
+      - CONSUMER_SECRET=[REPLACE_ME]
+      - ACCESS_TOKEN_KEY=[REPLACE_ME]
+      - ACCESS_TOKEN_SECRET=[REPLACE_ME]
+      - WEBHOOK_ENV=[REPLACE_ME]
+      - PORT=8888
+      - APP_URL=[NGROK_URL]
