@@ -1,0 +1,11 @@
+{
+  "name": "Twitter Go Bot",
+  "description": "Twitter bot that says hello to mentions",
+  "repository": "https://github.com/JosemyDuarte/TwitterGoBot",
+  "logo": "https://cdn.exclaimer.com/Handbook%20Images/twitter-icon_64x64.png",
+  "keywords": [
+    "go",
+    "twitter",
+    "bot"
+  ]
+}
