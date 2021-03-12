@@ -3,7 +3,7 @@ Twitter Go Bot
 
 A simple bot in Golang that will reply to any mention with a "hello".
 
-### How to use it?
+## How to use it?
 
 This guide assumes that you have a [developer account on Twitter](https://developer.twitter.com/en) and an App with its keys & tokens at hand.
 
@@ -15,9 +15,9 @@ To make this bot listen for mentions you will need access to the **Account Activ
 
 It will ask you what label to use for your environment. In the screenshot the label is `Dev`. We will need this value later.
 
-### Deployment
+## Deployment
 
-#### Heroku
+### On Heroku
 
 Just use the deployment button [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy) and it will not work 😅 until you set the environment variables.
 
@@ -39,7 +39,7 @@ Done? Not yet, but almost there... Now you need to whitelist your heroku app URL
 
 Now go a test it! Just mention your bot, and it will reply to your tweet saying "hello" 😁
 
-#### Local
+### On Local
 
 Twitter doesn't like callbacks to `localhost` so we will be using [ngrok](https://ngrok.com/download) to make it work. So first run:
 
